@@ -4,16 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class TextMsg extends StatelessWidget {
-  TextMsg({
+  const TextMsg({
     super.key,
     required this.messageData,
   });
 
   final Map messageData;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -76,18 +76,16 @@ class TextMsg extends StatelessWidget {
 }
 
 class ImageMsg extends StatelessWidget {
-  const ImageMsg(
-      {super.key,
-      required this.message,
-      required this.messageTime,
-      required this.isMe});
+  const ImageMsg({
+    super.key,
+    required this.message,
+  });
 
-  final String message;
-  final Timestamp messageTime;
-  final bool isMe;
+  final Map message;
 
   @override
   Widget build(BuildContext context) {
+    bool isMe = message['uid'] == _auth.currentUser!.uid;
     return Container(
       alignment: isMe ? Alignment.topRight : Alignment.topLeft,
       child: Container(
@@ -100,7 +98,7 @@ class ImageMsg extends StatelessWidget {
               MediaQuery.of(context).size.width / 1.425, //70% width of screen
         ),
         decoration: BoxDecoration(
-            color: isMe ? Colors.grey : Colors.white,
+            color: isMe ? primaryColor : Colors.white,
             borderRadius: isMe
                 ? const BorderRadius.only(
                     topLeft: Radius.circular(10),
@@ -126,7 +124,7 @@ class ImageMsg extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: CachedNetworkImage(
-                imageUrl: message,
+                imageUrl: message['message'],
                 placeholder: (context, url) =>
                     const CircularProgressIndicator(),
                 errorWidget: (context, url, error) => Container(
@@ -151,7 +149,7 @@ class ImageMsg extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
               child: Text(
                 DateFormat('KK:mm a ')
-                    .format(messageTime.toDate())
+                    .format(message['time'].toDate())
                     .toLowerCase(),
                 style: TextStyle(
                   fontSize: 10,
@@ -166,7 +164,7 @@ class ImageMsg extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
               child: Text(
                 DateFormat('KK:mm a ')
-                    .format(messageTime.toDate())
+                    .format(message['time'].toDate())
                     .toLowerCase(),
                 style: const TextStyle(fontSize: 10, color: Colors.white),
               ),

@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'package:chat_app/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
+import "package:path/path.dart" as path;
 
 class ChatController extends GetxController {
   final TextEditingController messageController = TextEditingController();
@@ -49,49 +52,40 @@ class ChatController extends GetxController {
     }
   }
 
-  void sendMessage(String cid, String message) async {
-    messageController.clear();
-    String mid = DateTime.now().microsecondsSinceEpoch.toString();
-
-    await _firestore
-        .collection('Chats')
-        .doc(cid)
-        .collection('Messages')
-        .doc(mid)
-        .set(
-      {
-        'message': message,
-        'type': 'text',
-        'uid': _auth.currentUser!.uid,
-        'time': Timestamp.now(),
-        'mid': mid,
-      },
-    );
-
-    await _firestore.collection('Chats').doc(cid).update(
-      {
-        'last_update': Timestamp.now(),
-        'last_msg': message,
-      },
-    ).then(
-      (_) {
-        log(message);
-      },
-    );
-  }
-
-  XFile? image;
-  void sendImage() async {
+  void sendMessage(String cid, String message, String type) async {
     try {
-      final pickedFile = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 50,
+      messageController.clear();
+      String mid = DateTime.now().microsecondsSinceEpoch.toString();
+
+      await _firestore
+          .collection('Chats')
+          .doc(cid)
+          .collection('Messages')
+          .doc(mid)
+          .set(
+        {
+          'message': message,
+          'type': type,
+          'uid': _auth.currentUser!.uid,
+          'time': Timestamp.now(),
+          'mid': mid,
+        },
       );
-      if (pickedFile != null) {
-        image = pickedFile;
-      }
+
+      await _firestore.collection('Chats').doc(cid).update(
+        {
+          'last_update': Timestamp.now(),
+          'last_msg': message,
+        },
+      ).then(
+        (_) {
+          log(message);
+        },
+      );
     } catch (e) {
-      log(e.toString());
+      log(
+        e.toString(),
+      );
     }
   }
 
@@ -107,6 +101,41 @@ class ChatController extends GetxController {
     ).then((_) {
       Navigator.pop(context);
     });
+  }
+
+  //To Upload a image before sending it
+  final RxBool isImageUploading = false.obs;
+  void sendImage(String type, String chatId) async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+
+    XFile? tempImage = await ImagePicker().pickImage(
+      source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,
+      imageQuality: 50,
+    );
+
+    if (tempImage != null) {
+      isImageUploading.value = true;
+      String fileName = path.basename(tempImage.path);
+      String extention = fileName.split('.')[1];
+      fileName =
+          "Chats/$chatId-${DateTime.now().millisecondsSinceEpoch.toString()}.$extention";
+      File imageFile = File(tempImage.path);
+      try {
+        await storage.ref(fileName).putFile(
+              imageFile,
+            );
+
+        final storageRef = FirebaseStorage.instance.ref();
+        String imageUrl = await storageRef.child(fileName).getDownloadURL();
+        sendMessage(chatId, imageUrl, 'image');
+        isImageUploading.value = false;
+      } catch (e) {
+        debugPrint(
+          e.toString(),
+        );
+        isImageUploading.value = false;
+      }
+    }
   }
 
   // To send a Push Notification when a text or image message is sent

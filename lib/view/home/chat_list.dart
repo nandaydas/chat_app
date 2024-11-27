@@ -172,7 +172,10 @@ class ChatList extends StatelessWidget {
                         ),
                         title: Obx(() => Text(userName.value)),
                         subtitle: Text(
-                          data['last_msg'],
+                          data['last_msg']
+                                  .contains('firebasestorage.googleapis')
+                              ? '📷 Photo'
+                              : data['last_msg'],
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

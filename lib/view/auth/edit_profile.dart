@@ -23,6 +23,7 @@ class EditProfile extends StatelessWidget {
     epc.emailController.text = ac.userEmail.value;
     epc.phoneController.text = ac.userPhone.value;
     epc.selectedGender.value = ac.userGender.value;
+    epc.imgUrl.value = ac.userImage.value;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -49,22 +50,24 @@ class EditProfile extends StatelessWidget {
                               width: 100,
                               fit: BoxFit.cover,
                             )
-                          : CachedNetworkImage(
-                              imageUrl: ac.userImage.value,
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) =>
-                                  ColoredBox(color: Colors.grey.shade300),
-                              placeholder: (context, url) =>
-                                  ColoredBox(color: Colors.grey.shade300),
+                          : Obx(
+                              () => CachedNetworkImage(
+                                imageUrl: epc.imgUrl.value,
+                                height: 100,
+                                width: 100,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) =>
+                                    ColoredBox(color: Colors.grey.shade300),
+                                placeholder: (context, url) =>
+                                    ColoredBox(color: Colors.grey.shade300),
+                              ),
                             ),
                     ),
                     Positioned(
                       right: 0,
                       bottom: 0,
                       child: InkWell(
-                        onTap: () => epc.pickImage(context),
+                        onTap: () => _imagePickerDialog(context),
                         child: CircleAvatar(
                           radius: 14,
                           backgroundColor: primaryColor.withOpacity(0.8),
@@ -285,6 +288,54 @@ class EditProfile extends StatelessWidget {
                 )
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  _imagePickerDialog(BuildContext context) {
+    //Gives an option to pick image from camera or gallery
+    return showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      epc.pickImage('camera');
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.camera_alt),
+                  ),
+                  const Text(
+                    'Camera',
+                  ),
+                ],
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      epc.pickImage('gallery');
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.image),
+                  ),
+                  const Text(
+                    'Gallery',
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

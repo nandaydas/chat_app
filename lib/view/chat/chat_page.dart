@@ -155,8 +155,13 @@ class ChatPage extends StatelessWidget {
                     return TextMsg(
                       messageData: message,
                     );
+                  } else if (message['type'] == 'image') {
+                    return ImageMsg(
+                      message: message,
+                    );
+                  } else {
+                    return const Text('Unsupported Message Type');
                   }
-                  return Text(message['message']);
                 },
               ),
             )),
@@ -228,7 +233,7 @@ class ChatPage extends StatelessWidget {
               ),
               child: TextField(
                 onSubmitted: (value) {
-                  cc.sendMessage(chatId, value);
+                  cc.sendMessage(chatId, value, 'text');
                   _showEmoji.value = 0; // Dismiss emoji after sending
                 },
                 onTap: () {
@@ -259,7 +264,7 @@ class ChatPage extends StatelessWidget {
                   suffixIcon: IconButton(
                     color: Colors.black,
                     onPressed: () {
-                      cc.sendImage();
+                      _imagePickerDialog(context);
                     },
                     icon: const Icon(Icons.image_outlined),
                   ),
@@ -285,6 +290,7 @@ class ChatPage extends StatelessWidget {
                 cc.sendMessage(
                   chatId,
                   cc.messageController.text,
+                  'text',
                 );
 
                 _showEmoji.value = 0; // Dismiss emoji after sending
@@ -299,6 +305,68 @@ class ChatPage extends StatelessWidget {
                 child: Icon(Icons.send_rounded)),
           ),
         ],
+      ),
+    );
+  }
+
+  _imagePickerDialog(BuildContext context) {
+    //Gives an option to pick image from camera or gallery
+    return showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              InkWell(
+                onTap: () {
+                  cc.sendImage('camera', chatId);
+                  Navigator.pop(context);
+                },
+                borderRadius: BorderRadius.circular(100),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 4),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+                      child: Icon(Icons.camera_alt),
+                    ),
+                    Text(
+                      'Camera',
+                    ),
+                    SizedBox(height: 4),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  cc.sendImage('gallery', chatId);
+                  Navigator.pop(context);
+                },
+                borderRadius: BorderRadius.circular(100),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 4),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+                      child: Icon(Icons.image_rounded),
+                    ),
+                    Text(
+                      'Gallery',
+                    ),
+                    SizedBox(height: 4),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
