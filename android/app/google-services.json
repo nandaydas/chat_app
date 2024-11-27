@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "326837747334",
+    "project_id": "jasda-care-family",
+    "storage_bucket": "jasda-care-family.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:326837747334:android:c5410e30e54cc4a8df5b07",
+        "android_client_info": {
+          "package_name": "com.jcf.communication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "326837747334-hj9s11lnqjtqtkg9ts6u8pcrulgsrtpl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW27_ErQUV7PS2OmLk1NEMpslnHUCYSBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "326837747334-hj9s11lnqjtqtkg9ts6u8pcrulgsrtpl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
