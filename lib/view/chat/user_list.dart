@@ -1,7 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/view/chat/chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:math' as math;
 
 class UserList extends StatelessWidget {
   UserList({super.key});
@@ -18,6 +16,8 @@ class UserList extends StatelessWidget {
 
   final RxBool searchOn = false.obs;
   final RxString searchTerm = "".obs;
+
+  final math.Random random = math.Random();
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +105,7 @@ class UserList extends StatelessWidget {
         onTap: () async {
           try {
             final RxString chatId = ''.obs;
+            final RxInt chatKey = 0.obs;
             await _firestore
                 .collection('Chats')
                 .where('users', arrayContains: _auth.currentUser!.uid)
@@ -114,12 +115,16 @@ class UserList extends StatelessWidget {
                 for (var s in snapshot.docs) {
                   if (s.data()['users'].contains(user['id'])) {
                     chatId.value = s.id; //if chat exists with current user
+                    chatKey.value =
+                        s.data()['key']; //if chat exists with current user
                   }
                 }
               },
             );
             if (chatId.value == "") {
               chatId.value = Timestamp.now().microsecondsSinceEpoch.toString();
+              int encryptionKey = random.nextInt(90) + 10;
+
               await _firestore.collection('Chats').doc(chatId.value).set(
                 {
                   'cid': chatId.value,
@@ -129,6 +134,7 @@ class UserList extends StatelessWidget {
                   ],
                   'last_msg': '',
                   'last_update': Timestamp.now(),
+                  'key': encryptionKey,
                 },
               ); //Creates new chat
             }
@@ -139,6 +145,7 @@ class UserList extends StatelessWidget {
                 builder: (context) => ChatPage(
                   userData: user,
                   chatId: chatId.value,
+                  chatKey: chatKey.value,
                 ),
               ),
             );

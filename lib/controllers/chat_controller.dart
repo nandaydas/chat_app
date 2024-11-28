@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:chat_app/controllers/encryption_controller.dart';
 import 'package:chat_app/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
+// ignore: depend_on_referenced_packages
 import "package:path/path.dart" as path;
 
 class ChatController extends GetxController {
@@ -21,6 +23,8 @@ class ChatController extends GetxController {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final EncryptionController ec = EncryptionController();
 
   getTime(Timestamp time) {
     if (DateFormat('yMd').format(time.toDate()) ==
@@ -52,10 +56,12 @@ class ChatController extends GetxController {
     }
   }
 
-  void sendMessage(String cid, String message, String type) async {
+  void sendMessage(String cid, String message, String type, int key) async {
     try {
-      messageController.clear();
       String mid = DateTime.now().microsecondsSinceEpoch.toString();
+      String encryptedMessage = ec.messageEncrypt(message, key);
+
+      messageController.clear();
 
       await _firestore
           .collection('Chats')
@@ -64,7 +70,7 @@ class ChatController extends GetxController {
           .doc(mid)
           .set(
         {
-          'message': message,
+          'message': encryptedMessage,
           'type': type,
           'uid': _auth.currentUser!.uid,
           'time': Timestamp.now(),
@@ -75,7 +81,7 @@ class ChatController extends GetxController {
       await _firestore.collection('Chats').doc(cid).update(
         {
           'last_update': Timestamp.now(),
-          'last_msg': message,
+          'last_msg': encryptedMessage,
         },
       ).then(
         (_) {
@@ -105,7 +111,7 @@ class ChatController extends GetxController {
 
   //To Upload a image before sending it
   final RxBool isImageUploading = false.obs;
-  void sendImage(String type, String chatId) async {
+  void sendImage(String type, String chatId, int key) async {
     FirebaseStorage storage = FirebaseStorage.instance;
 
     XFile? tempImage = await ImagePicker().pickImage(
@@ -127,7 +133,7 @@ class ChatController extends GetxController {
 
         final storageRef = FirebaseStorage.instance.ref();
         String imageUrl = await storageRef.child(fileName).getDownloadURL();
-        sendMessage(chatId, imageUrl, 'image');
+        sendMessage(chatId, imageUrl, 'image', key);
         isImageUploading.value = false;
       } catch (e) {
         debugPrint(

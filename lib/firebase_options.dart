@@ -26,10 +26,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -58,6 +55,17 @@ class DefaultFirebaseOptions {
     messagingSenderId: '326837747334',
     projectId: 'jasda-care-family',
     storageBucket: 'jasda-care-family.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBI8MtmJAi-MD3dduviOTyb_QGANIBnzYA',
+    appId: '1:326837747334:ios:7fbae28b94ab3c16df5b07',
+    messagingSenderId: '326837747334',
+    projectId: 'jasda-care-family',
+    storageBucket: 'jasda-care-family.firebasestorage.app',
+    androidClientId: '326837747334-hb2ghqs7j9a5ratc4k60vt0vghf040mq.apps.googleusercontent.com',
+    iosClientId: '326837747334-9vfr5viimirbf2r96cmmd34ol85l7t2i.apps.googleusercontent.com',
+    iosBundleId: 'com.example.chatApp',
   );
 
 }

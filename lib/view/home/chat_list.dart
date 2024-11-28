@@ -1,9 +1,9 @@
 import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/constants/colors.dart';
 import 'package:chat_app/controllers/auth_controller.dart';
 import 'package:chat_app/controllers/chat_controller.dart';
+import 'package:chat_app/controllers/encryption_controller.dart';
 import 'package:chat_app/view/chat/chat_page.dart';
 import 'package:chat_app/view/chat/user_list.dart';
 import 'package:chat_app/view/widgets/carousel_slider.dart';
@@ -19,6 +19,7 @@ class ChatList extends StatelessWidget {
 
   final ChatController cc = Get.put(ChatController());
   final AuthController ac = Get.put(AuthController());
+  final EncryptionController ec = EncryptionController();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -97,6 +98,9 @@ class ChatList extends StatelessWidget {
                   log('ChatList Error: $e');
                 }
 
+                String decryptedMessage =
+                    ec.messageDecrypt(data['last_msg'], data['key']);
+
                 return Card(
                   margin:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -118,6 +122,7 @@ class ChatList extends StatelessWidget {
                               'push_token': userToken.value,
                             },
                             chatId: data['cid'] ?? '',
+                            chatKey: data['key'] ?? 0,
                           ),
                         ),
                       );
@@ -172,10 +177,10 @@ class ChatList extends StatelessWidget {
                         ),
                         title: Obx(() => Text(userName.value)),
                         subtitle: Text(
-                          data['last_msg']
+                          decryptedMessage
                                   .contains('firebasestorage.googleapis')
                               ? '📷 Photo'
-                              : data['last_msg'],
+                              : decryptedMessage,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

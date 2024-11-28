@@ -17,10 +17,12 @@ class ChatPage extends StatelessWidget {
     super.key,
     required this.userData,
     required this.chatId,
+    required this.chatKey,
   });
 
   final Map userData;
   final String chatId;
+  final int chatKey;
 
   final ChatController cc = Get.put(ChatController());
   final AuthController ac = Get.put(AuthController());
@@ -152,13 +154,9 @@ class ChatPage extends StatelessWidget {
                   var message = doc.data();
 
                   if (message['type'] == 'text') {
-                    return TextMsg(
-                      messageData: message,
-                    );
+                    return textMessage(context, message, chatKey);
                   } else if (message['type'] == 'image') {
-                    return ImageMsg(
-                      message: message,
-                    );
+                    return imageMsg(context, message, chatKey);
                   } else {
                     return const Text('Unsupported Message Type');
                   }
@@ -233,7 +231,15 @@ class ChatPage extends StatelessWidget {
               ),
               child: TextField(
                 onSubmitted: (value) {
-                  cc.sendMessage(chatId, value, 'text');
+                  cc.sendPushMessage(
+                    userData['push_token'],
+                    userData['name'],
+                    cc.messageController.text,
+                    'Text',
+                    chatId,
+                    userData,
+                  );
+                  cc.sendMessage(chatId, value, 'text', chatKey);
                   _showEmoji.value = 0; // Dismiss emoji after sending
                 },
                 onTap: () {
@@ -291,6 +297,7 @@ class ChatPage extends StatelessWidget {
                   chatId,
                   cc.messageController.text,
                   'text',
+                  chatKey,
                 );
 
                 _showEmoji.value = 0; // Dismiss emoji after sending
@@ -322,7 +329,7 @@ class ChatPage extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  cc.sendImage('camera', chatId);
+                  cc.sendImage('camera', chatId, chatKey);
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(100),
@@ -344,7 +351,7 @@ class ChatPage extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  cc.sendImage('gallery', chatId);
+                  cc.sendImage('gallery', chatId, chatKey);
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(100),
