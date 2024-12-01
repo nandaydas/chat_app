@@ -51,5 +51,7 @@
 			<string>http</string>
 			<string>https</string>
 		</array>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>To send audio messages in chat.</string>
 	</dict>
 </plist>

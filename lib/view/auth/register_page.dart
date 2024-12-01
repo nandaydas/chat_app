@@ -1,5 +1,3 @@
-import 'package:chat_app/view/home/home_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../constants/colors.dart';
@@ -11,19 +9,9 @@ class RegisterPage extends StatelessWidget {
 
   final AuthController ac = Get.put(AuthController());
   final _formKey = GlobalKey<FormState>();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(
-      Duration.zero,
-      () {
-        if (_auth.currentUser != null) {
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => MyHomePage()));
-        }
-      },
-    );
     return Scaffold(
       backgroundColor: primaryColor,
       body: Container(

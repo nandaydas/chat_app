@@ -16,7 +16,7 @@ Widget textMessage(BuildContext context, Map message, int key) {
   return Container(
     alignment: isMe ? Alignment.topRight : Alignment.topLeft,
     child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       constraints: BoxConstraints(
         maxWidth:
@@ -26,14 +26,14 @@ Widget textMessage(BuildContext context, Map message, int key) {
           color: isMe ? primaryColor : Colors.white,
           borderRadius: isMe
               ? const BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
                 )
               : const BorderRadius.only(
-                  topRight: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
+                  topRight: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
                 ),
           boxShadow: [
             BoxShadow(
@@ -54,6 +54,7 @@ Widget textMessage(BuildContext context, Map message, int key) {
               color: isMe ? Colors.white : Colors.black,
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             DateFormat('KK:mm a ')
                 .format(message['time'].toDate())
@@ -76,8 +77,8 @@ Widget imageMsg(BuildContext context, Map message, int key) {
   return Container(
     alignment: isMe ? Alignment.topRight : Alignment.topLeft,
     child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
-      padding: const EdgeInsets.all(5),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      padding: const EdgeInsets.all(4),
       constraints: BoxConstraints(
         minHeight: 150,
         minWidth: 150,
@@ -88,14 +89,14 @@ Widget imageMsg(BuildContext context, Map message, int key) {
           color: isMe ? primaryColor : Colors.white,
           borderRadius: isMe
               ? const BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
                 )
               : const BorderRadius.only(
-                  topRight: Radius.circular(10),
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
+                  topRight: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
                 ),
           boxShadow: [
             BoxShadow(
@@ -112,23 +113,10 @@ Widget imageMsg(BuildContext context, Map message, int key) {
             borderRadius: BorderRadius.circular(10),
             child: CachedNetworkImage(
               imageUrl: decryptedMessage,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Container(
-                color: Colors.grey.withOpacity(0.5),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 150,
-                      width: 150,
-                      child: Icon(
-                        Icons.broken_image_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              placeholder: (context, url) =>
+                  ColoredBox(color: Colors.grey.shade300),
+              errorWidget: (context, url, error) =>
+                  ColoredBox(color: Colors.grey.shade300),
             ),
           ),
           Padding(

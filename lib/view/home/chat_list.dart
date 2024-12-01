@@ -127,11 +127,12 @@ class ChatList extends StatelessWidget {
                         ),
                       );
                     },
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ListTile(
-                        leading: Obx(
-                          () => Stack(
+                    child: ListTile(
+                      leading: Obx(
+                        () => SizedBox(
+                          height: 50,
+                          width: 50,
+                          child: Stack(
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(50),
@@ -155,39 +156,44 @@ class ChatList extends StatelessWidget {
                                           : data['users'][0])
                                       .snapshots(),
                                   builder: (context, snapshot) {
-                                    return Visibility(
-                                      visible: snapshot.data!['is_active'],
-                                      child: Positioned(
-                                        bottom: 2,
-                                        right: 2,
-                                        child: Container(
-                                          height: 12,
-                                          width: 12,
-                                          decoration: BoxDecoration(
-                                              color: Colors.green,
-                                              border: Border.all(
-                                                  color: Colors.white),
-                                              shape: BoxShape.circle),
+                                    if (snapshot.hasData) {
+                                      return Visibility(
+                                        visible: snapshot.data!['is_active'],
+                                        child: Positioned(
+                                          bottom: 2,
+                                          right: 2,
+                                          child: Container(
+                                            height: 12,
+                                            width: 12,
+                                            decoration: BoxDecoration(
+                                                color: Colors.green,
+                                                border: Border.all(
+                                                    color: Colors.white),
+                                                shape: BoxShape.circle),
+                                          ),
                                         ),
-                                      ),
-                                    );
+                                      );
+                                    } else {
+                                      return const Text('NA');
+                                    }
                                   })
                             ],
                           ),
                         ),
-                        title: Obx(() => Text(userName.value)),
-                        subtitle: Text(
-                          decryptedMessage
-                                  .contains('firebasestorage.googleapis')
-                              ? '📷 Photo'
-                              : decryptedMessage,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: Text(
-                          cc.getTime(data['last_update']),
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                      ),
+                      title: Obx(() => Text(userName.value)),
+                      subtitle: Text(
+                        decryptedMessage.contains('.jpg')
+                            ? '📷 Photo'
+                            : decryptedMessage.contains('.m4a')
+                                ? '🎤 Voice message'
+                                : decryptedMessage,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Text(
+                        cc.getTime(data['last_update']),
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
                   ),

@@ -50,6 +50,8 @@ dependencies:
   firebase_messaging: ^15.1.5
   googleapis_auth: ^1.6.0
   firebase_storage: ^12.3.6
+  record: ^5.2.0
+  just_audio: ^0.9.42
 
 dev_dependencies:
   flutter_test:

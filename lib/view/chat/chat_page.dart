@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../constants/colors.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import '../widgets/audio_message.dart';
 import '../widgets/message_bubbles.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
@@ -157,6 +158,11 @@ class ChatPage extends StatelessWidget {
                     return textMessage(context, message, chatKey);
                   } else if (message['type'] == 'image') {
                     return imageMsg(context, message, chatKey);
+                  } else if (message['type'] == 'audio') {
+                    return VoiceMessageWidget(
+                      message: message,
+                      mkey: chatKey,
+                    );
                   } else {
                     return const Text('Unsupported Message Type');
                   }
@@ -229,87 +235,115 @@ class ChatPage extends StatelessWidget {
                 side: const BorderSide(color: Colors.grey, width: 1),
                 borderRadius: BorderRadius.circular(100),
               ),
-              child: TextField(
-                onSubmitted: (value) {
-                  cc.sendPushMessage(
-                    userData['push_token'],
-                    userData['name'],
-                    cc.messageController.text,
-                    'Text',
-                    chatId,
-                    userData,
-                  );
-                  cc.sendMessage(chatId, value, 'text', chatKey);
-                  _showEmoji.value = 0; // Dismiss emoji after sending
-                },
-                onTap: () {
-                  if (_showEmoji.value == 1) {
-                    _showEmoji.value = 0; // Hide emoji on tap
-                  }
-                },
-                controller: cc.messageController,
-                textInputAction: TextInputAction.send,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  hintText: 'Type a message',
-                  prefixIcon: IconButton(
-                    onPressed: () {
-                      FocusScope.of(context).unfocus();
-                      _showEmoji.value = _showEmoji.value == 0 ? 1 : 0;
-                    },
-                    icon: Obx(
-                      () => Icon(
-                        Icons.face_outlined,
-                        color: (_showEmoji.value == 1)
-                            ? Colors.grey
-                            : Colors.black,
+              child: Obx(
+                () => TextField(
+                  controller: cc.messageController,
+                  enabled: !cc.isRecording.value,
+                  onSubmitted: (value) {
+                    cc.sendPushMessage(
+                      ac.userName.value,
+                      cc.messageController.text,
+                      chatId,
+                      userData['push_token'],
+                    );
+                    cc.sendMessage(chatId, value, 'text', chatKey);
+                    _showEmoji.value = 0; // Dismiss emoji after sending
+                  },
+                  onTap: () {
+                    if (_showEmoji.value == 1) {
+                      _showEmoji.value = 0; // Hide emoji on tap
+                    }
+                  },
+                  onChanged: (value) {
+                    cc.messageText.value = value;
+                  },
+                  textInputAction: TextInputAction.send,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    hintText: cc.isRecording.value
+                        ? 'Recording audio...'
+                        : 'Type a message...',
+                    prefixIcon: IconButton(
+                      onPressed: () {
+                        FocusScope.of(context).unfocus();
+                        _showEmoji.value = _showEmoji.value == 0 ? 1 : 0;
+                      },
+                      icon: Obx(
+                        () => Icon(
+                          Icons.face_outlined,
+                          color: (_showEmoji.value == 1)
+                              ? Colors.grey
+                              : Colors.black,
+                        ),
                       ),
                     ),
-                  ),
-                  suffixIcon: IconButton(
-                    color: Colors.black,
-                    onPressed: () {
-                      _imagePickerDialog(context);
-                    },
-                    icon: const Icon(Icons.image_outlined),
+                    suffixIcon: IconButton(
+                      color: Colors.black,
+                      onPressed: () {
+                        _imagePickerDialog(context);
+                      },
+                      icon: const Icon(Icons.image_outlined),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
           const SizedBox(
-            width: 5,
+            width: 2,
           ),
-          ElevatedButton(
-            onPressed: () {
-              if (cc.messageController.text != "") {
-                cc.sendPushMessage(
-                  userData['push_token'],
-                  userData['name'],
-                  cc.messageController.text,
-                  'Text',
-                  chatId,
-                  userData,
-                );
+          Obx(
+            () => Visibility(
+              visible: cc.messageText.value != "",
+              child: ElevatedButton(
+                onPressed: () {
+                  if (cc.messageController.text != "") {
+                    cc.sendPushMessage(
+                      ac.userName.value,
+                      cc.messageController.text,
+                      chatId,
+                      userData['push_token'],
+                    );
 
-                cc.sendMessage(
-                  chatId,
-                  cc.messageController.text,
-                  'text',
-                  chatKey,
-                );
+                    cc.sendMessage(
+                      chatId,
+                      cc.messageController.text,
+                      'text',
+                      chatKey,
+                    );
 
-                _showEmoji.value = 0; // Dismiss emoji after sending
-              }
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(14)),
-            child: const RotationTransition(
-                turns: AlwaysStoppedAnimation(315 / 360),
-                child: Icon(Icons.send_rounded)),
+                    _showEmoji.value = 0; // Dismiss emoji after sending
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(14)),
+                child: const Icon(Icons.send_rounded),
+              ),
+            ),
+          ),
+          Obx(
+            () => Visibility(
+              visible: cc.messageText.value == "",
+              child: GestureDetector(
+                onLongPress: () => cc.startVoiceRecording(),
+                onLongPressEnd: (_) => cc.stopVoiceRecording(
+                    chatId, chatKey, userData['push_token'], ac.userName.value),
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(14)),
+                  child: Padding(
+                    padding: EdgeInsets.all(cc.isRecording.value ? 4.0 : 0.0),
+                    child: const Icon(Icons.mic_rounded),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -329,7 +363,8 @@ class ChatPage extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  cc.sendImage('camera', chatId, chatKey);
+                  cc.sendImage('camera', chatId, chatKey,
+                      userData['push_token'], ac.userName.value);
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(100),
@@ -351,7 +386,8 @@ class ChatPage extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  cc.sendImage('gallery', chatId, chatKey);
+                  cc.sendImage('gallery', chatId, chatKey,
+                      userData['push_token'], ac.userName.value);
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(100),

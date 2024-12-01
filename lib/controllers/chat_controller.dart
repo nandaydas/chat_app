@@ -6,6 +6,7 @@ import 'package:chat_app/services/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,6 +16,9 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
 import "package:path/path.dart" as path;
+import 'package:record/record.dart';
+// ignore: depend_on_referenced_packages
+import 'package:path_provider/path_provider.dart';
 
 class ChatController extends GetxController {
   final TextEditingController messageController = TextEditingController();
@@ -25,6 +29,11 @@ class ChatController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final EncryptionController ec = EncryptionController();
+
+  final RxString messageText = "".obs;
+  final RxBool isRecording = false.obs;
+
+  final record = AudioRecorder();
 
   getTime(Timestamp time) {
     if (DateFormat('yMd').format(time.toDate()) ==
@@ -62,6 +71,7 @@ class ChatController extends GetxController {
       String encryptedMessage = ec.messageEncrypt(message, key);
 
       messageController.clear();
+      messageText.value = "";
 
       await _firestore
           .collection('Chats')
@@ -111,7 +121,8 @@ class ChatController extends GetxController {
 
   //To Upload a image before sending it
   final RxBool isImageUploading = false.obs;
-  void sendImage(String type, String chatId, int key) async {
+  void sendImage(String type, String chatId, int key, String receiverToken,
+      String senderName) async {
     FirebaseStorage storage = FirebaseStorage.instance;
 
     XFile? tempImage = await ImagePicker().pickImage(
@@ -135,6 +146,7 @@ class ChatController extends GetxController {
         String imageUrl = await storageRef.child(fileName).getDownloadURL();
         sendMessage(chatId, imageUrl, 'image', key);
         isImageUploading.value = false;
+        sendPushMessage(senderName, '📷 Photo', chatId, receiverToken);
       } catch (e) {
         debugPrint(
           e.toString(),
@@ -145,14 +157,14 @@ class ChatController extends GetxController {
   }
 
   // To send a Push Notification when a text or image message is sent
-  void sendPushMessage(String token, String title, String body, String type,
-      String chatId, Map userData) async {
+  void sendPushMessage(String senderName, String message, String chatId,
+      String receiverToken) async {
     const String projectId = "jasda-care-family";
     final String serverKey = await GetServerKey().getServerKeyToken();
 
     log('Sending push message...');
 
-    if (token.isNotEmpty) {
+    if (receiverToken.isNotEmpty) {
       try {
         final url = Uri.parse(
             'https://fcm.googleapis.com/v1/projects/$projectId/messages:send');
@@ -164,11 +176,11 @@ class ChatController extends GetxController {
         // Construct the payload
         final payload = {
           'message': {
-            'token': token,
+            'token': receiverToken,
             'notification': {
-              'title': title,
-              'body': type == 'Text' ? body : 'Sent a 📷 Photo',
-              'image': type == 'Image' ? body : null,
+              'title': senderName,
+              'body': message,
+              // 'image': type == 'Image' ? message : null,
             },
             'android': {
               'priority': 'high',
@@ -180,10 +192,10 @@ class ChatController extends GetxController {
             'data': {
               'type': 'chat',
               'chat_id': chatId,
-              'id': userData['id'],
-              'name': userData['name'],
-              'image': userData['name'],
-              'push_token': userData['name'],
+              // 'id': userData['id'],
+              // 'name': userData['name'],
+              // 'image': userData['name'],
+              // 'push_token': userData['name'],
             },
           },
         };
@@ -205,6 +217,73 @@ class ChatController extends GetxController {
       }
     } else {
       log("No token provided.");
+    }
+  }
+
+  Future<void> startVoiceRecording() async {
+    try {
+      isRecording.value = true;
+
+      HapticFeedback.vibrate();
+
+      // Check and request permission if needed
+      if (await record.hasPermission()) {
+        final dir = await getApplicationDocumentsDirectory();
+        final filePath =
+            '${dir.path}/jcf-${Timestamp.now().microsecondsSinceEpoch}.m4a';
+
+        // Start recording to file
+        await record.start(
+            const RecordConfig(
+              bitRate: 32000,
+              sampleRate: 16000,
+            ),
+            path: filePath);
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  Future<void> stopVoiceRecording(String chatId, int chatKey,
+      String receiverToken, String senderName) async {
+    try {
+      isRecording.value = false;
+
+      HapticFeedback.vibrate();
+
+      final path = await record.stop();
+      uploadToFirebase(path!, chatId, chatKey, receiverToken, senderName);
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  Future<void> uploadToFirebase(String filePath, String chatId, int chatKey,
+      String receiverToken, String senderName) async {
+    try {
+      final file = File(filePath);
+
+      if (!file.existsSync()) {
+        log('File not found at $filePath');
+        return;
+      }
+
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('Chats/Audio/${DateTime.now().millisecondsSinceEpoch}.m4a');
+
+      final uploadTask = storageRef.putFile(file);
+
+      // Monitor upload progress (optional)
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      log('File uploaded successfully: $downloadUrl');
+      sendMessage(chatId, downloadUrl, 'audio', chatKey);
+      sendPushMessage(senderName, '📷 Voice message', chatId, receiverToken);
+    } catch (e) {
+      log('Error uploading file: ${e.toString()}');
     }
   }
 }

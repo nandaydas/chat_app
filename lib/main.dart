@@ -1,7 +1,7 @@
 import 'package:chat_app/constants/colors.dart';
 import 'package:chat_app/firebase_api.dart';
 import 'package:chat_app/firebase_options.dart';
-import 'package:chat_app/view/auth/register_page.dart';
+import 'package:chat_app/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
             const FloatingActionButtonThemeData(backgroundColor: primaryColor),
         useMaterial3: false,
       ),
-      home: RegisterPage(),
+      home: SplashScreen(),
     );
   }
 }
