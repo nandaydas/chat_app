@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/controllers/auth_controller.dart';
 import 'package:chat_app/controllers/chat_controller.dart';
+import 'package:chat_app/view/widgets/video_message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ import 'package:get/get.dart';
 import '../../constants/colors.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import '../widgets/audio_message.dart';
-import '../widgets/message_bubbles.dart';
+import '../widgets/text_image_message.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
@@ -155,13 +156,31 @@ class ChatPage extends StatelessWidget {
                   var message = doc.data();
 
                   if (message['type'] == 'text') {
-                    return textMessage(context, message, chatKey);
+                    return textMessage(
+                      context,
+                      message,
+                      chatKey,
+                    );
                   } else if (message['type'] == 'image') {
-                    return imageMsg(context, message, chatKey);
+                    return imageMsg(
+                      context,
+                      message,
+                      chatKey,
+                      userData['name'],
+                      DateFormat('KK:mm a ')
+                          .format(message['time'].toDate())
+                          .toLowerCase(),
+                    );
                   } else if (message['type'] == 'audio') {
                     return VoiceMessageWidget(
                       message: message,
                       mkey: chatKey,
+                    );
+                  } else if (message['type'] == 'video') {
+                    return VideoMessage(
+                      message: message,
+                      chatKey: chatKey,
+                      senderName: userData['name'],
                     );
                   } else {
                     return const Text('Unsupported Message Type');
@@ -169,6 +188,15 @@ class ChatPage extends StatelessWidget {
                 },
               ),
             )),
+            Obx(
+              () => Visibility(
+                visible:
+                    cc.isMediaUploading.value | cc.isVoiceMessageSending.value,
+                child: const LinearProgressIndicator(
+                  color: primaryColor,
+                ),
+              ),
+            ),
             ac.userType.value == 'Client'
                 ? Obx(
                     () => cc.clientChat.value
@@ -283,7 +311,7 @@ class ChatPage extends StatelessWidget {
                       onPressed: () {
                         _imagePickerDialog(context);
                       },
-                      icon: const Icon(Icons.image_outlined),
+                      icon: const Icon(Icons.attach_file_rounded),
                     ),
                   ),
                 ),
@@ -363,31 +391,8 @@ class ChatPage extends StatelessWidget {
             children: [
               InkWell(
                 onTap: () {
-                  cc.sendImage('camera', chatId, chatKey,
-                      userData['push_token'], ac.userName.value);
-                  Navigator.pop(context);
-                },
-                borderRadius: BorderRadius.circular(100),
-                child: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 4),
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
-                      child: Icon(Icons.camera_alt),
-                    ),
-                    Text(
-                      'Camera',
-                    ),
-                    SizedBox(height: 4),
-                  ],
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  cc.sendImage('gallery', chatId, chatKey,
-                      userData['push_token'], ac.userName.value);
+                  cc.sendMedia('image', chatId, chatKey, userData['push_token'],
+                      ac.userName.value);
                   Navigator.pop(context);
                 },
                 borderRadius: BorderRadius.circular(100),
@@ -401,7 +406,30 @@ class ChatPage extends StatelessWidget {
                       child: Icon(Icons.image_rounded),
                     ),
                     Text(
-                      'Gallery',
+                      'Image',
+                    ),
+                    SizedBox(height: 4),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  cc.sendMedia('video', chatId, chatKey, userData['push_token'],
+                      ac.userName.value);
+                  Navigator.pop(context);
+                },
+                borderRadius: BorderRadius.circular(100),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 4),
+                    Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+                      child: Icon(Icons.videocam_rounded),
+                    ),
+                    Text(
+                      'Video',
                     ),
                     SizedBox(height: 4),
                   ],

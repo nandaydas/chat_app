@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,6 +20,7 @@ import "package:path/path.dart" as path;
 import 'package:record/record.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
+// import 'package:video_compress/video_compress.dart';
 
 class ChatController extends GetxController {
   final TextEditingController messageController = TextEditingController();
@@ -32,6 +34,9 @@ class ChatController extends GetxController {
 
   final RxString messageText = "".obs;
   final RxBool isRecording = false.obs;
+
+  final RxBool isMediaUploading = false.obs;
+  final RxBool isVoiceMessageSending = false.obs;
 
   final record = AudioRecorder();
 
@@ -119,19 +124,38 @@ class ChatController extends GetxController {
     });
   }
 
-  //To Upload a image before sending it
-  final RxBool isImageUploading = false.obs;
-  void sendImage(String type, String chatId, int key, String receiverToken,
+  // compressVideo(String filePath) async {
+  //   final compressedFile = await VideoCompress.compressVideo(
+  //     filePath,
+  //     quality: VideoQuality.LowQuality,
+  //   );
+
+  //   return compressedFile!.file;
+  // }
+
+  //To Upload a image/Video before sending it
+  void sendMedia(String type, String chatId, int key, String receiverToken,
       String senderName) async {
     FirebaseStorage storage = FirebaseStorage.instance;
 
-    XFile? tempImage = await ImagePicker().pickImage(
-      source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,
-      imageQuality: 50,
-    );
+    XFile? tempImage;
+
+    if (type == 'image') {
+      tempImage = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 50,
+        requestFullMetadata: false,
+      );
+    } else {
+      tempImage = await ImagePicker().pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 10),
+      );
+    }
 
     if (tempImage != null) {
-      isImageUploading.value = true;
+      isMediaUploading.value = true;
+
       String fileName = path.basename(tempImage.path);
       String extention = fileName.split('.')[1];
       fileName =
@@ -144,14 +168,20 @@ class ChatController extends GetxController {
 
         final storageRef = FirebaseStorage.instance.ref();
         String imageUrl = await storageRef.child(fileName).getDownloadURL();
-        sendMessage(chatId, imageUrl, 'image', key);
-        isImageUploading.value = false;
-        sendPushMessage(senderName, '📷 Photo', chatId, receiverToken);
+        sendMessage(chatId, imageUrl, type, key);
+
+        sendPushMessage(
+          senderName,
+          type == 'image' ? '📷 Photo' : '📹 Video',
+          chatId,
+          receiverToken,
+        );
+        isMediaUploading.value = false;
       } catch (e) {
         debugPrint(
           e.toString(),
         );
-        isImageUploading.value = false;
+        isMediaUploading.value = false;
       }
     }
   }
@@ -239,8 +269,11 @@ class ChatController extends GetxController {
               sampleRate: 16000,
             ),
             path: filePath);
+      } else {
+        Fluttertoast.showToast(msg: 'Enable mic permission in settings.');
       }
     } catch (e) {
+      isRecording.value = false;
       log(e.toString());
     }
   }
@@ -249,7 +282,7 @@ class ChatController extends GetxController {
       String receiverToken, String senderName) async {
     try {
       isRecording.value = false;
-
+      isVoiceMessageSending.value = true;
       HapticFeedback.vibrate();
 
       final path = await record.stop();
@@ -281,7 +314,8 @@ class ChatController extends GetxController {
 
       log('File uploaded successfully: $downloadUrl');
       sendMessage(chatId, downloadUrl, 'audio', chatKey);
-      sendPushMessage(senderName, '📷 Voice message', chatId, receiverToken);
+      sendPushMessage(senderName, '🎤 Voice message', chatId, receiverToken);
+      isVoiceMessageSending.value = false;
     } catch (e) {
       log('Error uploading file: ${e.toString()}');
     }

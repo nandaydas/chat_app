@@ -6,6 +6,7 @@ import 'package:chat_app/controllers/chat_controller.dart';
 import 'package:chat_app/controllers/encryption_controller.dart';
 import 'package:chat_app/view/chat/chat_page.dart';
 import 'package:chat_app/view/chat/user_list.dart';
+import 'package:chat_app/view/notification_page.dart';
 import 'package:chat_app/view/widgets/carousel_slider.dart';
 import 'package:chat_app/view/widgets/my_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,7 +39,14 @@ class ChatList extends StatelessWidget {
         foregroundColor: Colors.black,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationPage(),
+                ),
+              );
+            },
             icon: const Icon(Icons.notifications_outlined),
           )
         ],
@@ -187,7 +195,9 @@ class ChatList extends StatelessWidget {
                             ? '📷 Photo'
                             : decryptedMessage.contains('.m4a')
                                 ? '🎤 Voice message'
-                                : decryptedMessage,
+                                : decryptedMessage.contains('.mp4')
+                                    ? '📹 Video'
+                                    : decryptedMessage,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

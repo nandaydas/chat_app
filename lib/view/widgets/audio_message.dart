@@ -1,8 +1,10 @@
+import 'dart:developer';
 import 'package:chat_app/controllers/encryption_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_cache/just_audio_cache.dart';
 import '../../constants/colors.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
@@ -25,7 +27,8 @@ class VoiceMessageWidget extends StatelessWidget {
 
   void _initializePlayer() async {
     isLoading.value = true; // Start loading
-    await _audioPlayer.setUrl(ec.messageDecrypt(message['message'], mkey));
+    await _audioPlayer.dynamicSet(
+        url: ec.messageDecrypt(message['message'], mkey));
     duration.value = _audioPlayer.duration;
     isLoading.value = false; // Loading complete
 
@@ -51,6 +54,9 @@ class VoiceMessageWidget extends StatelessWidget {
   }
 
   void _togglePlayPause() async {
+    try {} catch (e) {
+      log(e.toString());
+    }
     if (isCompleted.value) {
       await _audioPlayer.seek(Duration.zero); // Reset to the start of the audio
       isCompleted.value = false; // Reset completion state
@@ -138,7 +144,8 @@ class VoiceMessageWidget extends StatelessWidget {
                       value: progress.value,
                       color: isMe ? Colors.white : primaryColor,
                       borderRadius: BorderRadius.circular(8.0),
-                      backgroundColor: Colors.grey[300],
+                      backgroundColor:
+                          isMe ? Colors.grey.shade500 : Colors.grey[300],
                     ),
                     const SizedBox(height: 6),
                     Row(
