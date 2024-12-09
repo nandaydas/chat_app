@@ -59,13 +59,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBI8MtmJAi-MD3dduviOTyb_QGANIBnzYA',
-    appId: '1:326837747334:ios:7fbae28b94ab3c16df5b07',
+    appId: '1:326837747334:ios:a0ea239c3b60ef56df5b07',
     messagingSenderId: '326837747334',
     projectId: 'jasda-care-family',
     storageBucket: 'jasda-care-family.firebasestorage.app',
     androidClientId: '326837747334-hb2ghqs7j9a5ratc4k60vt0vghf040mq.apps.googleusercontent.com',
-    iosClientId: '326837747334-9vfr5viimirbf2r96cmmd34ol85l7t2i.apps.googleusercontent.com',
-    iosBundleId: 'com.example.chatApp',
+    iosClientId: '326837747334-qdn6nmp1dkfjgdog1qj0fqjaauod6oa0.apps.googleusercontent.com',
+    iosBundleId: 'com.jcf.communications',
   );
 
 }
