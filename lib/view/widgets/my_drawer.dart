@@ -48,34 +48,36 @@ class MyDrawer extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Obx(
-                          () => Text(
-                            ac.userName.value,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: primaryColor,
-                              fontFamily: 'Sarabun',
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Obx(
+                            () => Text(
+                              ac.userName.value,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: primaryColor,
+                                fontFamily: 'Sarabun',
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Obx(
-                          () => Text(
-                            ac.userEmail.value,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
-                              fontFamily: 'Sarabun',
+                          const SizedBox(height: 4),
+                          Obx(
+                            () => Text(
+                              ac.userEmail.value,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontFamily: 'Sarabun',
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                      ],
+                          const SizedBox(height: 2),
+                        ],
+                      ),
                     ),
                   ],
                 ),
