@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../constants/colors.dart';
+import '../../constants/links.dart';
 import '../../controllers/auth_controller.dart';
 import 'login_page.dart';
 
@@ -194,7 +195,42 @@ class RegisterPage extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
-                                    ac.emailSignUp(context);
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: const Text(
+                                            'Terms and Conditions for Use of Jasda Care Family Portal',
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                          content: Scrollbar(
+                                            child: SingleChildScrollView(
+                                              child: Text(
+                                                waiverText,
+                                                style: const TextStyle(
+                                                    fontSize: 12),
+                                              ),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                ac.emailSignUp(context);
+                                              },
+                                              child: const Text(
+                                                  'Agree & Continue'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
                                   }
                                 },
                                 child: const Text('Create Account'),

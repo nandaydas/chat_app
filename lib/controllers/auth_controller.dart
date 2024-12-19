@@ -116,9 +116,12 @@ class AuthController extends GetxController {
     } catch (e) {
       log(e.toString());
       if (e.toString().contains('[firebase_auth/invalid-credential]')) {
-        log("Invalid Credential");
+        emailController.printError();
+        passController.printError();
+        Fluttertoast.showToast(msg: "Invalid Credential");
       } else if (e.toString().contains('[firebase_auth/invalid-email]')) {
-        log("Invalid Email");
+        emailController.printError();
+        Fluttertoast.showToast(msg: "Invalid Email");
       } else {
         log(e.toString());
       }

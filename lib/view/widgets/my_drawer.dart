@@ -101,7 +101,7 @@ class MyDrawer extends StatelessWidget {
                       'My Profile',
                       Icons.account_circle_outlined,
                       () {
-                        hc.currentTab.value = 2;
+                        hc.currentTab.value = 1;
                         Navigator.pop(context);
                       },
                     ),
@@ -152,6 +152,17 @@ class MyDrawer extends StatelessWidget {
                     }),
                     listItem('Rate Us', Icons.star_outline, () async {
                       final url = Uri.parse(rateUs);
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      } else {
+                        Fluttertoast.showToast(msg: 'Something went wrong !');
+                      }
+                    }),
+                    listItem('About us', Icons.info_outline, () async {
+                      final url = Uri.parse(aboutUs);
                       if (await canLaunchUrl(url)) {
                         await launchUrl(
                           url,

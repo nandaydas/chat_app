@@ -143,7 +143,7 @@ class ChatController extends GetxController {
     if (type == 'image') {
       tempImage = await ImagePicker().pickImage(
         source: ImageSource.gallery,
-        imageQuality: 50,
+        imageQuality: 30,
         requestFullMetadata: false,
       );
     } else {

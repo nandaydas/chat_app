@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class EditProfileController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -37,11 +38,17 @@ class EditProfileController extends GetxController {
 
     if (tempImage != null) {
       isImageUploading.value = true;
-      fileName = path.basename(tempImage.path);
+
+      CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: tempImage.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      );
+
+      fileName = path.basename(croppedFile!.path);
       String extention = fileName.split('.')[1];
       fileName =
           "Profiles/${_auth.currentUser!.uid}-${DateTime.now().millisecondsSinceEpoch.toString()}.$extention";
-      imageFile = File(tempImage.path);
+      imageFile = File(croppedFile.path);
       try {
         await _storage.ref(fileName).putFile(
               imageFile!,
@@ -49,12 +56,18 @@ class EditProfileController extends GetxController {
         Fluttertoast.showToast(msg: "Uploaded");
         final storageRef = FirebaseStorage.instance.ref();
         imgUrl.value = await storageRef.child(fileName).getDownloadURL();
-
+        log(imgUrl.value);
+        await _firestore.collection("Users").doc(_auth.currentUser!.uid).update(
+          {
+            'image': imgUrl.value,
+          },
+        );
         isImageUploading.value = false;
       } catch (e) {
         debugPrint(
           e.toString(),
         );
+
         isImageUploading.value = false;
       }
     }
@@ -73,7 +86,6 @@ class EditProfileController extends GetxController {
           'phone': phoneController.text,
           'gender': selectedGender.value,
           'address': addressController.text,
-          'image': imgUrl.value,
         },
       ).then(
         (_) {
