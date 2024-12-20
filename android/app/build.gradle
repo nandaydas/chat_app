@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.jcf.communication"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35 //flutter.compileSdkVersion
     ndkVersion = "25.1.8937393" //flutter.ndkVersion
 
     compileOptions {

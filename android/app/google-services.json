@@ -37,6 +37,13 @@
             {
               "client_id": "326837747334-hj9s11lnqjtqtkg9ts6u8pcrulgsrtpl.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "326837747334-9vfr5viimirbf2r96cmmd34ol85l7t2i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatApp"
+              }
             }
           ]
         }
