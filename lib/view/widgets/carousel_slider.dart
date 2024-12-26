@@ -8,9 +8,11 @@ import 'package:url_launcher/url_launcher.dart';
 class MySlider extends StatelessWidget {
   MySlider({super.key});
 
-  final slides = [].obs;
+  final CarouselController cc = Get.put(CarouselController());
 
-  getImgList() {
+  final RxList slides = [].obs;
+
+  void getImgList() {
     FirebaseFirestore.instance
         .collection("App")
         .doc('carousel_slider')

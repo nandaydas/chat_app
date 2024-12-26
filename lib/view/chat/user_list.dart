@@ -1,6 +1,6 @@
 import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat_app/view/chat/chat_page.dart';
+import 'package:chat_app/routes/route_names.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_firestore/firebase_ui_firestore.dart';
@@ -139,16 +139,11 @@ class UserList extends StatelessWidget {
               ); //Creates new chat
             }
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatPage(
-                  userData: user,
-                  chatId: chatId.value,
-                  chatKey: chatKey.value,
-                ),
-              ),
-            );
+            Get.toNamed(RouteNames.chatScreen, arguments: [
+              user,
+              chatId.value,
+              chatKey.value,
+            ]);
           } catch (e) {
             log(e.toString());
           }

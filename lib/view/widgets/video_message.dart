@@ -1,5 +1,5 @@
 import 'package:chat_app/controllers/encryption_controller.dart';
-import 'package:chat_app/view/chat/video_player.dart';
+import 'package:chat_app/routes/route_names.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,18 +30,13 @@ class VideoMessage extends StatelessWidget {
       alignment: isMe ? Alignment.topRight : Alignment.topLeft,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => VideoPlayer(
-                videoUrl: decryptedMessage,
-                senderName: senderName,
-                timeStamp: DateFormat('KK:mm a ')
-                    .format(message['time'].toDate())
-                    .toLowerCase(),
-              ),
-            ),
-          );
+          Get.toNamed(RouteNames.videoPlayer, arguments: [
+            decryptedMessage,
+            senderName,
+            DateFormat('KK:mm a ')
+                .format(message['time'].toDate())
+                .toLowerCase(),
+          ]);
         },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),

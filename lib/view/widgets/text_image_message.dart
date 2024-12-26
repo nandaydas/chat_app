@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat_app/constants/colors.dart';
 import 'package:chat_app/controllers/encryption_controller.dart';
-import 'package:chat_app/view/chat/image_viewer.dart';
+import 'package:chat_app/routes/route_names.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
@@ -80,16 +81,8 @@ Widget imageMsg(BuildContext context, Map message, int key, String senderName,
     alignment: isMe ? Alignment.topRight : Alignment.topLeft,
     child: InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImageViewer(
-              imageUrl: decryptedMessage,
-              senderName: senderName,
-              timeStamp: timeStamp,
-            ),
-          ),
-        );
+        Get.toNamed(RouteNames.imageViewer,
+            arguments: [decryptedMessage, senderName, timeStamp]);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),

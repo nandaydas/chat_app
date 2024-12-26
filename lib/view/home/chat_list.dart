@@ -4,9 +4,7 @@ import 'package:chat_app/constants/colors.dart';
 import 'package:chat_app/controllers/auth_controller.dart';
 import 'package:chat_app/controllers/chat_controller.dart';
 import 'package:chat_app/controllers/encryption_controller.dart';
-import 'package:chat_app/view/chat/chat_page.dart';
-import 'package:chat_app/view/chat/user_list.dart';
-import 'package:chat_app/view/notification_page.dart';
+import 'package:chat_app/routes/route_names.dart';
 import 'package:chat_app/view/widgets/carousel_slider.dart';
 import 'package:chat_app/view/widgets/my_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,12 +38,7 @@ class ChatList extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationPage(),
-                ),
-              );
+              Get.toNamed(RouteNames.notificationPage);
             },
             icon: const Icon(Icons.notifications_outlined),
           )
@@ -117,22 +110,20 @@ class ChatList extends StatelessWidget {
                   ),
                   child: InkWell(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatPage(
-                            userData: {
-                              'name': userName.value,
-                              'image': userImage.value,
-                              'id': data['users'][0] == _auth.currentUser!.uid
-                                  ? data['users'][1]
-                                  : data['users'][0],
-                              'push_token': userToken.value,
-                            },
-                            chatId: data['cid'] ?? '',
-                            chatKey: data['key'] ?? 0,
-                          ),
-                        ),
+                      Get.toNamed(
+                        RouteNames.chatScreen,
+                        arguments: [
+                          {
+                            'name': userName.value,
+                            'image': userImage.value,
+                            'id': data['users'][0] == _auth.currentUser!.uid
+                                ? data['users'][1]
+                                : data['users'][0],
+                            'push_token': userToken.value,
+                          },
+                          data['cid'] ?? '',
+                          data['key'] ?? 0,
+                        ],
                       );
                     },
                     child: ListTile(
@@ -218,12 +209,7 @@ class ChatList extends StatelessWidget {
           visible: ac.userType.value != 'Client',
           child: FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UserList(),
-                ),
-              );
+              Get.toNamed(RouteNames.userList);
             },
             heroTag: 'New Chat',
             child: const Icon(Icons.chat_rounded),
