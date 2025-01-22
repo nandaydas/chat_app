@@ -30,6 +30,7 @@ class EditProfileController extends GetxController {
   File? imageFile;
   String fileName = "";
   final RxBool isImageUploading = false.obs;
+  
   Future pickImage(String type) async {
     XFile? tempImage = await ImagePicker().pickImage(
       source: type == 'camera' ? ImageSource.camera : ImageSource.gallery,

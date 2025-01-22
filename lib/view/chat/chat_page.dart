@@ -265,6 +265,8 @@ class ChatPage extends StatelessWidget {
               ),
               child: Obx(
                 () => TextField(
+                  minLines: 1,
+                  maxLines: 5,
                   controller: cc.messageController,
                   enabled: !cc.isRecording.value,
                   onSubmitted: (value) {
