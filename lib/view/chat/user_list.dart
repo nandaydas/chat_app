@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_app/controllers/auth_controller.dart';
 import 'package:chat_app/routes/route_names.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,6 +14,8 @@ class UserList extends StatelessWidget {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final AuthController ac = Get.put(AuthController());
 
   final RxBool searchOn = false.obs;
   final RxString searchTerm = "".obs;
@@ -59,6 +62,17 @@ class UserList extends StatelessWidget {
           ),
         ],
       ),
+      floatingActionButton: Visibility(
+        visible: ac.userType.value == "Employee",
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            Get.toNamed(RouteNames.createGroup);
+          },
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.group_add_rounded),
+          label: const Text("New group"),
+        ),
+      ),
       body: Scrollbar(
         radius: const Radius.circular(50),
         interactive: true,
@@ -101,13 +115,18 @@ class UserList extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
       ),
+      color: Colors.white,
       child: InkWell(
         onTap: () async {
           try {
             final RxString chatId = ''.obs;
             final RxInt chatKey = 0.obs;
+
+            final RxMap chatData = {}.obs;
+
             await _firestore
                 .collection('Chats')
+                .where("type", isEqualTo: "Normal")
                 .where('users', arrayContains: _auth.currentUser!.uid)
                 .get()
                 .then(
@@ -117,6 +136,8 @@ class UserList extends StatelessWidget {
                     chatId.value = s.id; //if chat exists with current user
                     chatKey.value =
                         s.data()['key']; //if chat exists with current user
+
+                    chatData.value = s.data();
                   }
                 }
               },
@@ -135,15 +156,35 @@ class UserList extends StatelessWidget {
                   'last_msg': '',
                   'last_update': Timestamp.now(),
                   'key': encryptionKey,
+                  'type': 'Normal',
                 },
               ); //Creates new chat
+
+              chatKey.value = encryptionKey;
+
+              chatData.value = {
+                'cid': chatId.value,
+                'users': [
+                  _auth.currentUser!.uid,
+                  user['id'],
+                ],
+                'last_msg': '',
+                'last_update': Timestamp.now(),
+                'key': encryptionKey,
+                'type': 'Normal',
+              };
             }
 
-            Get.toNamed(RouteNames.chatScreen, arguments: [
-              user,
-              chatId.value,
-              chatKey.value,
-            ]);
+            Get.offAndToNamed(
+              RouteNames.chatScreen,
+              arguments: [
+                [
+                  user,
+                ],
+                chatData,
+                chatKey.value,
+              ],
+            );
           } catch (e) {
             log(e.toString());
           }
@@ -163,7 +204,7 @@ class UserList extends StatelessWidget {
             ),
           ),
           title: Text(user['name'] ?? ''),
-          subtitle: Text(user['email'] ?? ''),
+          subtitle: Text("${user['email']}"),
         ),
       ),
     );

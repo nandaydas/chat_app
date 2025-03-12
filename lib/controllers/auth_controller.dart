@@ -19,6 +19,7 @@ class AuthController extends GetxController {
   final TextEditingController confirmPassController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
 
+  final RxString uid = ''.obs;
   final RxString userName = ''.obs;
   final RxString userEmail = ''.obs;
   final RxString userImage = ''.obs;
@@ -85,6 +86,7 @@ class AuthController extends GetxController {
         .get()
         .then(
       (snapshot) {
+        uid.value = snapshot.data()!['id'];
         userName.value = snapshot.data()!['name'];
         userEmail.value = snapshot.data()!['email'];
         userImage.value = snapshot.data()!['image'];

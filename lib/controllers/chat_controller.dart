@@ -20,7 +20,7 @@ import "package:path/path.dart" as path;
 import 'package:record/record.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
-// import 'package:video_compress/video_compress.dart';
+import 'package:file_picker/file_picker.dart';
 
 class ChatController extends GetxController {
   final TextEditingController messageController = TextEditingController();
@@ -134,8 +134,8 @@ class ChatController extends GetxController {
   // }
 
   //To Upload a image/Video before sending it
-  void sendMedia(String type, String chatId, int key, String receiverToken,
-      String senderName) async {
+  void sendMedia(String type, ImageSource source, String chatId, int key,
+      String receiverToken, String senderName) async {
     FirebaseStorage storage = FirebaseStorage.instance;
 
     XFile? tempImage;
@@ -319,5 +319,120 @@ class ChatController extends GetxController {
     } catch (e) {
       log('Error uploading file: ${e.toString()}');
     }
+  }
+
+  Future<void> uploadPDF(String chatId, int chatKey, String senderName,
+      String receiverToken) async {
+    // Pick PDF file
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null) {
+      File file = File(result.files.single.path!);
+      String fileName = result.files.single.name;
+
+      try {
+        isMediaUploading.value = true;
+
+        // Upload to Firebase Storage
+        Reference ref = FirebaseStorage.instance.ref().child('pdfs/$fileName');
+        UploadTask uploadTask = ref.putFile(file);
+
+        // Wait for upload completion
+        TaskSnapshot snapshot = await uploadTask;
+        String url = await snapshot.ref.getDownloadURL();
+
+        sendMessage(chatId, url, 'pdf', chatKey);
+        sendPushMessage(senderName, '📄 Pdf file', chatId, receiverToken);
+
+        isMediaUploading.value = false;
+      } catch (e) {
+        isMediaUploading.value = false;
+        log("uploadPDF exception $e");
+      }
+    }
+  }
+
+  final RxList<Map> selectedMsg = <Map>[].obs;
+
+  void deleteMessages(String chatId) async {
+    for (var msg in selectedMsg) {
+      await _firestore
+          .collection("Chats")
+          .doc(chatId)
+          .collection("Messages")
+          .doc(msg['mid'])
+          .update(
+        {
+          'type': 'deleted',
+          'deleted': Timestamp.now(),
+        },
+      );
+    }
+    selectedMsg.clear();
+  }
+
+  void deleteChat(String cid) async {
+    await _firestore.collection("Chats").doc(cid).delete();
+  }
+
+  void forwardMessages(Map chatData, int sendKey) async {
+    try {
+      for (Map msg in selectedMsg) {
+        final String message = ec.messageEncrypt(
+            ec.messageDecrypt(msg['message'], sendKey), chatData['key']);
+        await _firestore
+            .collection("Chats")
+            .doc(chatData['cid'])
+            .collection("Messages")
+            .add(
+          {
+            'uid': _auth.currentUser!.uid,
+            'time': Timestamp.now(),
+            'mid': msg['mid'],
+            'type': msg['type'],
+            'message': message,
+            'forwarded': true,
+          },
+        );
+
+        await _firestore.collection("Chats").doc(chatData['cid']).update(
+          {
+            'last_msg': message,
+            'last_update': Timestamp.now(),
+          },
+        );
+      }
+      selectedMsg.clear();
+      Get.back();
+    } catch (e) {
+      log("forwardMessages exception: $e");
+    }
+  }
+
+  void blockContact(String uid) async {
+    await _firestore.collection("Users").doc(_auth.currentUser!.uid).update(
+      {
+        'blocked': FieldValue.arrayUnion([uid])
+      },
+    ).then(
+      (_) {
+        Fluttertoast.showToast(msg: 'User blocked');
+      },
+    );
+  }
+
+  void unblockContact(String uid) async {
+    await _firestore.collection("Users").doc(_auth.currentUser!.uid).update(
+      {
+        'blocked': FieldValue.arrayRemove([uid])
+      },
+    ).then(
+      (_) {
+        Fluttertoast.showToast(msg: 'User unblocked');
+      },
+    );
   }
 }

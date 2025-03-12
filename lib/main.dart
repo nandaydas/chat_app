@@ -25,12 +25,17 @@ class MyApp extends StatelessWidget {
       title: 'JCF Communication',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        appBarTheme: const AppBarTheme(backgroundColor: primaryColor),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        appBarTheme: const AppBarTheme(
+            backgroundColor: primaryColor, foregroundColor: Colors.white),
         scaffoldBackgroundColor: backgroundColor,
-        floatingActionButtonTheme:
-            const FloatingActionButtonThemeData(backgroundColor: primaryColor),
-        useMaterial3: false,
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            backgroundColor: primaryColor, foregroundColor: Colors.white),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor, foregroundColor: Colors.white),
+        ),
+        useMaterial3: true,
       ),
       getPages: AppRoutes.appRoutes(),
       initialRoute: RouteNames.splashScreen,

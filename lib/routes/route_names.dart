@@ -10,4 +10,6 @@ class RouteNames {
   static const String userList = '/users';
   static const String imageViewer = '/image';
   static const String videoPlayer = '/video';
+  static const String pdfPlayer = '/pdfPlayer';
+  static const String createGroup = '/createGroup';
 }

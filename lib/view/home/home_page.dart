@@ -47,21 +47,28 @@ class MyHomePage extends StatelessWidget {
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          child: BottomNavigationBar(
-            selectedItemColor: primaryColor,
-            currentIndex: hc.currentTab.value,
-            onTap: (value) {
+          child: NavigationBar(
+            height: 64,
+            backgroundColor: Colors.white,
+            selectedIndex: hc.currentTab.value,
+            onDestinationSelected: (value) {
               hc.currentTab.value = value;
             },
-            items: const [
-              BottomNavigationBarItem(
+            destinations: const [
+              NavigationDestination(
                 icon: Icon(Icons.chat_outlined),
-                activeIcon: Icon(Icons.chat_rounded),
+                selectedIcon: Icon(
+                  Icons.chat_rounded,
+                  color: primaryColor,
+                ),
                 label: 'Chats',
               ),
-              BottomNavigationBarItem(
+              NavigationDestination(
                 icon: Icon(Icons.account_circle_outlined),
-                activeIcon: Icon(Icons.account_circle_rounded),
+                selectedIcon: Icon(
+                  Icons.account_circle_rounded,
+                  color: primaryColor,
+                ),
                 label: 'Profile',
               ),
             ],

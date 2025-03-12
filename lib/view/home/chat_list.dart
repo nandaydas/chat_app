@@ -69,6 +69,7 @@ class ChatList extends StatelessWidget {
                   .where('users', arrayContains: _auth.currentUser!.uid)
                   .orderBy('last_update', descending: true),
               shrinkWrap: true,
+              padding: const EdgeInsets.only(bottom: 50),
               physics: const NeverScrollableScrollPhysics(),
               emptyBuilder: (context) =>
                   const Center(child: Text('No Chats Found !')),
@@ -76,129 +77,225 @@ class ChatList extends StatelessWidget {
                 child: Text('Something went wrong !'),
               ),
               itemBuilder: (context, doc) {
-                final data = doc.data();
-                final RxString userName = "Loading...".obs;
-                final RxString userImage = "".obs;
-                final RxString userToken = "".obs;
+                final Map<String, dynamic> data = doc.data();
 
-                try {
-                  _firestore
-                      .collection('Users')
-                      .doc(data['users'][0] == _auth.currentUser!.uid
-                          ? data['users'][1]
-                          : data['users'][0])
-                      .get()
-                      .then(
-                    (snapshot) {
-                      userName.value = snapshot.data()!['name'];
-                      userImage.value = snapshot.data()!['image'];
-                      userToken.value = snapshot.data()!['push_token'];
-                    },
-                  );
-                } catch (e) {
-                  log('ChatList Error: $e');
-                }
+                if (data['type'] == 'Normal') {
+                  final RxString userName = "Loading...".obs;
+                  final RxString userImage = "".obs;
+                  final RxString userToken = "".obs;
 
-                String decryptedMessage =
-                    ec.messageDecrypt(data['last_msg'], data['key']);
+                  try {
+                    _firestore
+                        .collection('Users')
+                        .doc(data['users'][0] == _auth.currentUser!.uid
+                            ? data['users'][1]
+                            : data['users'][0])
+                        .get()
+                        .then(
+                      (snapshot) {
+                        userName.value = snapshot.data()!['name'];
+                        userImage.value = snapshot.data()!['image'];
+                        userToken.value = snapshot.data()!['push_token'];
+                      },
+                    );
+                  } catch (e) {
+                    log('ChatList Error: $e');
+                  }
 
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      Get.toNamed(
-                        RouteNames.chatScreen,
-                        arguments: [
-                          {
-                            'name': userName.value,
-                            'image': userImage.value,
-                            'id': data['users'][0] == _auth.currentUser!.uid
-                                ? data['users'][1]
-                                : data['users'][0],
-                            'push_token': userToken.value,
-                          },
-                          data['cid'] ?? '',
-                          data['key'] ?? 0,
-                        ],
-                      );
-                    },
-                    child: ListTile(
-                      leading: Obx(
-                        () => SizedBox(
-                          height: 50,
-                          width: 50,
-                          child: Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: CachedNetworkImage(
-                                  imageUrl: userImage.value,
-                                  height: 50,
-                                  width: 50,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) =>
-                                      ColoredBox(color: Colors.grey.shade300),
-                                  errorWidget: (context, url, error) =>
-                                      ColoredBox(color: Colors.grey.shade300),
-                                ),
-                              ),
-                              StreamBuilder(
-                                  stream: _firestore
-                                      .collection('Users')
-                                      .doc(data['users'][0] ==
-                                              _auth.currentUser!.uid
-                                          ? data['users'][1]
-                                          : data['users'][0])
-                                      .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData) {
-                                      return Visibility(
-                                        visible: snapshot.data!['is_active'],
-                                        child: Positioned(
-                                          bottom: 2,
-                                          right: 2,
-                                          child: Container(
-                                            height: 12,
-                                            width: 12,
-                                            decoration: BoxDecoration(
-                                                color: Colors.green,
-                                                border: Border.all(
-                                                    color: Colors.white),
-                                                shape: BoxShape.circle),
-                                          ),
-                                        ),
-                                      );
-                                    } else {
-                                      return const Text('NA');
-                                    }
-                                  })
+                  String decryptedMessage =
+                      ec.messageDecrypt(data['last_msg'], data['key']);
+
+                  return Card(
+                    color: Colors.white,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Get.toNamed(
+                          RouteNames.chatScreen,
+                          arguments: [
+                            [
+                              {
+                                'name': userName.value,
+                                'image': userImage.value,
+                                'id': data['users'][0] == _auth.currentUser!.uid
+                                    ? data['users'][1]
+                                    : data['users'][0],
+                                'push_token': userToken.value,
+                              }
                             ],
+                            data,
+                            data['key'] ?? 0,
+                          ],
+                        );
+                      },
+                      onLongPress: () {
+                        deleteChat(context, data['cid']);
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: ListTile(
+                        leading: Obx(
+                          () => SizedBox(
+                            height: 50,
+                            width: 50,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: CachedNetworkImage(
+                                    imageUrl: userImage.value,
+                                    height: 50,
+                                    width: 50,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(Icons.person_rounded),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(Icons.person_rounded),
+                                    ),
+                                  ),
+                                ),
+                                StreamBuilder(
+                                    stream: _firestore
+                                        .collection('Users')
+                                        .doc(data['users'][0] ==
+                                                _auth.currentUser!.uid
+                                            ? data['users'][1]
+                                            : data['users'][0])
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Visibility(
+                                          visible: snapshot.data!['is_active'],
+                                          child: Positioned(
+                                            bottom: 2,
+                                            right: 2,
+                                            child: Container(
+                                              height: 12,
+                                              width: 12,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.green,
+                                                  border: Border.all(
+                                                      color: Colors.white),
+                                                  shape: BoxShape.circle),
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        return const Text('NA');
+                                      }
+                                    })
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      title: Obx(() => Text(userName.value)),
-                      subtitle: Text(
-                        decryptedMessage.contains('.jpg')
-                            ? '📷 Photo'
-                            : decryptedMessage.contains('.m4a')
-                                ? '🎤 Voice message'
-                                : decryptedMessage.contains('.mp4')
-                                    ? '📹 Video'
-                                    : decryptedMessage,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: Text(
-                        cc.getTime(data['last_update']),
-                        style: const TextStyle(fontSize: 12),
+                        title: Obx(
+                          () => Text(
+                            userName.value,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        subtitle: Text(
+                          decryptedMessage.contains('.jpg')
+                              ? '📷 Photo'
+                              : decryptedMessage.contains('.m4a')
+                                  ? '🎤 Voice message'
+                                  : decryptedMessage.contains('.mp4')
+                                      ? '📹 Video'
+                                      : decryptedMessage.contains('.pdf')
+                                          ? '📄 PDF File'
+                                          : decryptedMessage,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Text(
+                          cc.getTime(data['last_update']),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  String decryptedMessage =
+                      ec.messageDecrypt(data['last_msg'], data['key']);
+
+                  final RxList<Map> userList = <Map>[].obs;
+
+                  return Card(
+                    color: Colors.white,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        for (var i in data['users']) {
+                          userList.add(
+                            {'id': i},
+                          );
+                        }
+
+                        Get.toNamed(
+                          RouteNames.chatScreen,
+                          arguments: [
+                            userList,
+                            data,
+                            data['key'] ?? 0,
+                          ],
+                        );
+                      },
+                      onLongPress: () {
+                        deleteChat(context, data['cid']);
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(50),
+                          child: CachedNetworkImage(
+                            imageUrl: data['image'] ?? '',
+                            height: 50,
+                            width: 50,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.group_rounded),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey.shade300,
+                              child: const Icon(Icons.group_rounded),
+                            ),
+                          ),
+                        ),
+                        title: Text(data['name'] ?? 'Group'),
+                        subtitle: Text(
+                          decryptedMessage.contains('.jpg')
+                              ? '📷 Photo'
+                              : decryptedMessage.contains('.m4a')
+                                  ? '🎤 Voice message'
+                                  : decryptedMessage.contains('.mp4')
+                                      ? '📹 Video'
+                                      : decryptedMessage.contains('.pdf')
+                                          ? '📄 PDF File'
+                                          : decryptedMessage,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Text(
+                          cc.getTime(data['last_update']),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  );
+                }
               },
             )
           ],
@@ -207,14 +304,41 @@ class ChatList extends StatelessWidget {
       floatingActionButton: Obx(
         () => Visibility(
           visible: ac.userType.value != 'Client',
-          child: FloatingActionButton(
+          child: FloatingActionButton.extended(
             onPressed: () {
               Get.toNamed(RouteNames.userList);
             },
             heroTag: 'New Chat',
-            child: const Icon(Icons.chat_rounded),
+            icon: const Icon(Icons.chat_rounded),
+            label: const Text("New Chat"),
           ),
         ),
+      ),
+    );
+  }
+
+  void deleteChat(BuildContext context, String cid) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete chat"),
+        content: const Text(
+            "You are about to parmanently delete this chat. Are you sure?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              cc.deleteChat(cid);
+            },
+            child: const Text("Delete"),
+          ),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:chat_app/view/auth/forget_password_page.dart';
 import 'package:chat_app/view/auth/login_page.dart';
 import 'package:chat_app/view/auth/register_page.dart';
 import 'package:chat_app/view/chat/chat_page.dart';
+import 'package:chat_app/view/chat/create_group.dart';
 import 'package:chat_app/view/chat/user_list.dart';
 import 'package:chat_app/view/chat/video_player.dart';
 import 'package:chat_app/view/home/home_page.dart';
@@ -42,7 +43,7 @@ class AppRoutes {
           name: RouteNames.chatScreen,
           page: () => ChatPage(
             userData: Get.arguments[0],
-            chatId: Get.arguments[1],
+            chatData: Get.arguments[1],
             chatKey: Get.arguments[2],
           ),
         ),
@@ -53,6 +54,10 @@ class AppRoutes {
         GetPage(
           name: RouteNames.userList,
           page: () => UserList(),
+        ),
+        GetPage(
+          name: RouteNames.createGroup,
+          page: () => CreateGroup(),
         ),
         GetPage(
           name: RouteNames.imageViewer,

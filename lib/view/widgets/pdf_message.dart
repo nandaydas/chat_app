@@ -10,8 +10,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../constants/colors.dart';
 
-class VideoMessage extends StatelessWidget {
-  VideoMessage({
+class PdfMessage extends StatelessWidget {
+  PdfMessage({
     super.key,
     required this.message,
     required this.chatKey,
@@ -60,12 +60,14 @@ class VideoMessage extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 2),
         child: GestureDetector(
           onLongPress: () {
-            cc.selectedMsg.add(message);
+            if (isMe) {
+              cc.selectedMsg.add(message);
+            }
           },
           onTap: () {
             if (cc.selectedMsg.isEmpty) {
               Get.toNamed(
-                RouteNames.videoPlayer,
+                RouteNames.pdfPlayer,
                 arguments: [
                   decryptedMessage,
                   message['uid'] == _auth.currentUser!.uid
@@ -154,11 +156,11 @@ class VideoMessage extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.play_arrow_rounded,
+                                Icons.description_rounded,
                                 color: Colors.white,
                               ),
                               Text(
-                                'Video file',
+                                ' PDF Document',
                                 style: TextStyle(
                                     fontSize: 14, color: Colors.white),
                               ),

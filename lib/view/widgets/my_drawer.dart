@@ -18,6 +18,10 @@ class MyDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: Colors.white,
+      shape: const BeveledRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.zero),
+      ),
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -211,7 +215,7 @@ class MyDrawer extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Version 1.0.0',
+                'Version 1.0.5',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ),
               const SizedBox(height: 50),

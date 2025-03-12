@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:chat_app/controllers/chat_controller.dart';
 import 'package:chat_app/controllers/encryption_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class VoiceMessageWidget extends StatelessWidget {
   final RxBool isLoading = false.obs;
 
   final EncryptionController ec = Get.put(EncryptionController());
+  final ChatController cc = Get.find<ChatController>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   void _initializePlayer() async {
@@ -79,100 +81,118 @@ class VoiceMessageWidget extends StatelessWidget {
     return Obx(
       () => Container(
         alignment: isMe ? Alignment.topRight : Alignment.topLeft,
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          constraints: BoxConstraints(
-            maxWidth:
-                MediaQuery.of(context).size.width / 1.425, //70% width of screen
-          ),
-          decoration: BoxDecoration(
-              color: isMe ? primaryColor : Colors.white,
-              borderRadius: isMe
-                  ? const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      bottomRight: Radius.circular(12),
-                    )
-                  : const BorderRadius.only(
-                      topRight: Radius.circular(12),
-                      bottomLeft: Radius.circular(12),
-                      bottomRight: Radius.circular(12),
-                    ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  spreadRadius: 0.5,
-                  blurRadius: 0.5,
-                  offset: isMe ? const Offset(0.5, 1) : const Offset(-0.5, 1),
-                )
-              ]),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: isLoading.value
-                    ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: isMe ? Colors.white : primaryColor,
-                          strokeWidth: 3,
-                        ),
+        color: cc.selectedMsg.contains(message)
+            ? primaryColor.withOpacity(0.2)
+            : Colors.transparent,
+            margin: const EdgeInsets.symmetric(vertical: 2),
+        child: GestureDetector(
+          onLongPress: () {
+            cc.selectedMsg.add(message);
+          },
+          onTap: () {
+            if (cc.selectedMsg.isNotEmpty) {
+              if (cc.selectedMsg.contains(message)) {
+                cc.selectedMsg.remove(message);
+              } else {
+                cc.selectedMsg.add(message);
+              }
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width /
+                  1.425, //70% width of screen
+            ),
+            decoration: BoxDecoration(
+                color: isMe ? primaryColor : Colors.white,
+                borderRadius: isMe
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
                       )
-                    : Icon(
-                        isPlaying.value
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        size: 30,
-                        color: isMe ? Colors.white : primaryColor,
+                    : const BorderRadius.only(
+                        topRight: Radius.circular(12),
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
                       ),
-                onPressed: _togglePlayPause,
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '',
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: isMe ? Colors.white : Colors.black),
-                    ),
-                    const SizedBox(height: 6),
-                    LinearProgressIndicator(
-                      value: progress.value,
-                      color: isMe ? Colors.white : primaryColor,
-                      borderRadius: BorderRadius.circular(8.0),
-                      backgroundColor:
-                          isMe ? Colors.grey.shade500 : Colors.grey[300],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _formatDuration(duration.value ?? Duration.zero),
-                          style: TextStyle(
-                              fontSize: 10,
-                              color: isMe ? Colors.white : Colors.black),
-                        ),
-                        Text(
-                          DateFormat('KK:mm a ')
-                              .format(message['time'].toDate())
-                              .toLowerCase(),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: isMe ? Colors.grey[200] : Colors.blueGrey,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    spreadRadius: 0.5,
+                    blurRadius: 0.5,
+                    offset: isMe ? const Offset(0.5, 1) : const Offset(-0.5, 1),
+                  )
+                ]),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: isLoading.value
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: isMe ? Colors.white : primaryColor,
+                            strokeWidth: 3,
                           ),
+                        )
+                      : Icon(
+                          isPlaying.value
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          size: 30,
+                          color: isMe ? Colors.white : primaryColor,
                         ),
-                      ],
-                    ),
-                  ],
+                  onPressed: _togglePlayPause,
                 ),
-              ),
-              const SizedBox(width: 10),
-            ],
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '',
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: isMe ? Colors.white : Colors.black),
+                      ),
+                      const SizedBox(height: 6),
+                      LinearProgressIndicator(
+                        value: progress.value,
+                        color: isMe ? Colors.white : primaryColor,
+                        borderRadius: BorderRadius.circular(8.0),
+                        backgroundColor:
+                            isMe ? Colors.grey.shade500 : Colors.grey[300],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _formatDuration(duration.value ?? Duration.zero),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: isMe ? Colors.white : Colors.black),
+                          ),
+                          Text(
+                            DateFormat('KK:mm a ')
+                                .format(message['time'].toDate())
+                                .toLowerCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isMe ? Colors.grey[200] : Colors.blueGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+            ),
           ),
         ),
       ),
