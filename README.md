@@ -1,16 +1,64 @@
-# chat_app
+# Chat App
 
-A new Flutter project.
+A simple, modern real-time chat application built with **Flutter**, **Firebase**, and **GetX**.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Running the App](#running-the-app)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Features
+
+- 🔐 Firebase Authentication (Email/Password, Google, etc.)
+- 💬 Real-time messaging with Firestore
+- 📲 Push notifications for new messages
+- 👥 1-to-1 and group chats
+- 🖼️ Send images and media
+- 🌗 Light/Dark mode
+- ⚡ Reactive state management with GetX
+
+---
+
+## Screenshots
+
+> *(Add screenshots or GIFs of your app here)*
+
+---
+
+## Tech Stack
+
+| Layer          | Technology |
+|----------------|------------|
+| Frontend (UI)  | Flutter (Dart) |
+| Backend (BaaS) | Firebase Authentication, Firestore, Firebase Storage |
+| State Mgmt     | GetX |
+| Push Messages  | Firebase Cloud Messaging |
+
+---
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (latest stable)
+- A Firebase project (configured for iOS/Android)
+- An editor such as VS Code or Android Studio
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Installation
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/nandaydas/chat_app.git
+   cd chat_app
