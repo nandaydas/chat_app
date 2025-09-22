@@ -30,12 +30,6 @@ A simple, modern real-time chat application built with **Flutter**, **Firebase**
 
 ---
 
-## Screenshots
-
-> *(Add screenshots or GIFs of your app here)*
-
----
-
 ## Tech Stack
 
 | Layer          | Technology |
