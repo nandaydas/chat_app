@@ -44,3 +44,4 @@ app.*.map.json
 
 # Remove Environment Files 
 .env
+*.env
