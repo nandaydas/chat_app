@@ -317,6 +317,7 @@ class ChatList extends StatelessWidget {
     );
   }
 
+  // Shows a confirmation dialog before deleting a chat
   void deleteChat(BuildContext context, String cid) {
     showDialog(
       context: context,
@@ -327,14 +328,14 @@ class ChatList extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Close dialog
             },
             child: const Text("Cancel"),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
-              cc.deleteChat(cid);
+              Navigator.pop(context); // Close dialog
+              cc.deleteChat(cid); // Delete chat
             },
             child: const Text("Delete"),
           ),
