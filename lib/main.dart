@@ -5,6 +5,7 @@ import 'package:chat_app/firebase_options.dart';
 import 'package:chat_app/routes/route_names.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'routes/app_routes.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,6 +26,24 @@ Future<void> main() async {
   // Initializes Firebase Cloud Messaging notifications
   await FirebaseApi().initNotifications();
 
+  // --- Enable Edge-to-Edge Layout ---
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+  // Make system bars transparent for immersive layout
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent, // Transparent status bar
+    systemNavigationBarColor: Colors.transparent, // Transparent nav bar
+    systemNavigationBarDividerColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark, // Icons for light backgrounds
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
+
+  // Lock app orientation (optional, can remove if not needed)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   // Runs the main application widget
   runApp(const MyApp());
 }
@@ -39,24 +58,30 @@ class MyApp extends StatelessWidget {
       title: 'JCF Communication', // App title
       debugShowCheckedModeBanner: false, // Hides the debug banner
       theme: ThemeData(
-        colorScheme:
-            ColorScheme.fromSeed(seedColor: Colors.teal), // Sets color scheme
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal), // Color scheme
         appBarTheme: const AppBarTheme(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white), // AppBar styling
-        scaffoldBackgroundColor:
-            backgroundColor, // Background color for scaffold
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0, // Make it flush with the system bar
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent, // Edge-to-edge status bar
+            statusBarIconBrightness: Brightness.light,
+          ),
+        ),
+        scaffoldBackgroundColor: backgroundColor, // Scaffold background
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white), // FAB styling
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white), // Button styling
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+          ),
         ),
-        useMaterial3: true, // Enables Material 3 design
+        useMaterial3: true,
       ),
-      getPages: AppRoutes.appRoutes(), // Defines app routes for navigation
+      getPages: AppRoutes.appRoutes(), // Defines app routes
       initialRoute: RouteNames.splashScreen, // Sets initial route
     );
   }
